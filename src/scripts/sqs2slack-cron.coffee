@@ -41,7 +41,6 @@ module.exports = (robot) ->
 	sqsRegion = process.env.HUBOT_AWS_SQS_REGION || 'ap-northeast-1'
 	cronTimer = process.env.HUBOT_SQS2SLACK_CRON_TIMER || '*/10 * * * *'
 	cronTimezone = process.env.HUBOT_SQS2SLACK_CRON_TIMEZONE || 'Asia/Tokyo'
-	channelName = process.env.HUBOT_SQS2SLACK_CHANNEL || '#general'
 	maxNumberOfMessages = process.env.HUBOT_SQS2SLACK_MAX_MSG || 5
 	waitTimeSeconds = process.env.HUBOT_SQS2SLACK_WAIT_SEC || 0
 	
@@ -72,7 +71,8 @@ module.exports = (robot) ->
 							for message, key in data.Messages
 								body = JSON.parse(message.Body)
 								entries.push {Id:"#{key+1}", ReceiptHandle:message.ReceiptHandle}
-								robot.messageRoom channelName, "*#{body.title}*\n#{body.message}"
+								msgSendChannelName = body.channel || channelName
+								robot.messageRoom msgSendChannelName, "*#{body.title}*\n#{body.message}"
 							
 							if entries.length > 0
 								msgDeleteParams = {Entries: entries, QueueUrl: queueUrl}
